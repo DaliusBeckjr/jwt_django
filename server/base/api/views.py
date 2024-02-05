@@ -6,8 +6,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .serializers import NoteSerializer
+from .serializers import NoteSerializer, UserSerializer
 from base.models import Note
+from django.contrib.auth.models import User
+
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -49,6 +51,22 @@ def getRoutes(req):
     ]
     
     return Response(routes)
+
+# user auth
+@api_view(['POST'])
+def regUser(req):
+    data = req.data
+    serializer = UserSerializer(data = data)
+
+    if serializer.is_valid():
+        # create_user() handles the hashing of the password in django
+        user = User.objects.create_user(
+            username= req.data.get('username'),
+            email= req.data.get('email'),
+            password= req.data.get('password')
+        )
+        return Response(serializer.data)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
